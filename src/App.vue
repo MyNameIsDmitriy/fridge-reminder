@@ -1,8 +1,10 @@
-<script setup></script>
+<script setup>
+import Header from "./components/Header.vue";
+</script>
 
 <template>
-  <div>
-    <div class="text-yellow-500 text-lg">Some div</div>
+  <div class="min-h-screen bg-nearlyBlack">
+    <Header />
   </div>
 </template>
 
