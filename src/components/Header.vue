@@ -1,4 +1,15 @@
-<script setup></script>
+<script setup>
+import { ref } from "vue";
+
+import HeaderInput from "./HeaderInput.vue";
+import AddGroceryModal from "./AddGroceryModal.vue";
+
+const isVisible = ref(null);
+
+const toggleAddGroceryModal = () => {
+  isVisible.value = !isVisible.value;
+};
+</script>
 
 <template>
   <header class="my-3 px-3">
@@ -9,57 +20,26 @@
         alt="fridge icon"
       />
 
-      <div class="relative w-1/3">
-        <img
-          class="absolute w-7 top-1.5 left-1"
-          src="../assets/svg/header/search-icon.svg"
-          alt="search icon"
-        />
-        <input
-          class="w-full h-10 pl-12 border-0 border-animation rounded-md outline-0 bg-transparent cursor-pointer"
-          disabled
-          placeholder="add grocery"
-          type="text"
-          name="text"
-        />
-      </div>
+      <HeaderInput
+        class="w-1/3"
+        :isVisible="isVisible"
+        @toggleAddGroceryModal="toggleAddGroceryModal"
+      />
 
       <div class="flex items-center gap-2">
         <input class="theme-checkbox" type="checkbox" />
         <img class="w-10" src="../assets/svg/header/user.svg" alt="user icon" />
       </div>
+
+      <AddGroceryModal
+        :isVisible="isVisible"
+        @toggleAddGroceryModal="toggleAddGroceryModal"
+      />
     </nav>
   </header>
 </template>
 
 <style lang="scss" scoped>
-.border-animation {
-  animation: rotateShadow 2s infinite cubic-bezier(0.55, 0.055, 0.675, 0.19);
-}
-
-.border-animation:hover {
-  animation-play-state: paused;
-  // animation-duration: 4s;
-}
-
-@keyframes rotateShadow {
-  0% {
-    box-shadow: -2px -2px 0px 0px #bc6ff1, 2px 2px 0px 0px #892cdc;
-  }
-  25% {
-    box-shadow: -2px 2px 0px 0px #bc6ff1, 2px -2px 0px 0px #892cdc;
-  }
-  50% {
-    box-shadow: 2px 2px 0px 0px #bc6ff1, -2px -2px 0px 0px #892cdc;
-  }
-  75% {
-    box-shadow: 2px -2px 0px 0px #bc6ff1, -2px 2px 0px 0px #892cdc;
-  }
-  100% {
-    box-shadow: -2px -2px 0px 0px #bc6ff1, 2px 2px 0px 0px #892cdc;
-  }
-}
-
 .theme-checkbox {
   --toggle-size: 8px;
   -webkit-appearance: none;
