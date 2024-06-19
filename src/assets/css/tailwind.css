@@ -6,7 +6,7 @@
   body {
     @apply min-h-screen;
     @apply bg-nearlyblack;
-    @apply text-white;
+    @apply text-darkwhite;
     @apply font-roboto;
   }
 }
