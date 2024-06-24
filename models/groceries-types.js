@@ -1,37 +1,30 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Groceries extends Model {
+  class GroceriesTypes extends Model {
     static associate(models) {
-      Groceries.belongsTo(models.GroceriesTypes);
+      GroceriesTypes.hasMany(models.Groceries);
     }
   }
 
-  Groceries.init(
+  GroceriesTypes.init(
     {
-      groceryId: {
+      groceryTypeId: {
         primaryKey: true,
-        type: DataTypes.INTEGER,
         autoIncrement: true,
+        type: DataTypes.INTEGER,
       },
-      groceryName: {
+      groceryTypeName: {
         allowNull: false,
         unique: true,
         type: DataTypes.STRING,
       },
-      imgUrl: {
-        allowNull: false,
-        type: DataTypes.STRING,
-      },
-      isCustom: {
-        type: DataTypes.BOOLEAN,
-      },
     },
     {
       sequelize,
-      modelName: "Groceries",
       timestamps: false,
+      modelName: "GroceriesTypes",
     }
   );
-  return Groceries;
+  return GroceriesTypes;
 };

@@ -7,7 +7,6 @@ module.exports = {
       groceryId: {
         primaryKey: true,
         autoIncrement: true,
-        allowNull: false,
         type: Sequelize.INTEGER,
       },
       groceryName: {
@@ -21,6 +20,11 @@ module.exports = {
       },
       isCustom: {
         type: Sequelize.BOOLEAN,
+      },
+      groceryTypeId: {
+        allowNull: false,
+        type: Sequelize.INTEGER,
+        references: { model: "GroceriesTypes", key: "groceryTypeId" },
       },
     });
   },
