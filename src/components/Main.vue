@@ -1,3 +1,5 @@
+<script setup></script>
+
 <template>
   <main
     class="w-5/6 m-auto mt-10 [&>div]:grid [&>div]:grid-cols-[1fr_1fr_2fr_1fr_1fr]"
@@ -12,9 +14,13 @@
       <p>Actions</p>
     </div>
 
-    <div class="mt-4 [&>*]:flex [&>*]:justify-center [&>*]:items-center">
-      <div>Banana</div>
-      <div>some image</div>
+    <div
+      v-for="grocery in groceries"
+      :key="grocery.groceryId"
+      class="mt-4 [&>*]:flex [&>*]:justify-center [&>*]:items-center"
+    >
+      <div>{{ grocery.groceryName }}</div>
+      <div>{{ grocery.imgUrl }}</div>
       <div>
         <div class="flex justify-center gap-3">
           <img
@@ -68,7 +74,5 @@
     </div>
   </main>
 </template>
-
-<script lang="ts" setup></script>
 
 <style></style>
