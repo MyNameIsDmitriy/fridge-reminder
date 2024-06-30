@@ -2,9 +2,9 @@
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class GroceriesTypes extends Model {
-    static associate(models) {
-      GroceriesTypes.hasMany(models.Groceries);
-    }
+    // static associate(models) {
+    //   GroceriesTypes.hasMany(models.Groceries);
+    // }
   }
 
   GroceriesTypes.init(

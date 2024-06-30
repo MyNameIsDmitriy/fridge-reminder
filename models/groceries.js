@@ -3,7 +3,9 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Groceries extends Model {
     static associate(models) {
-      Groceries.belongsTo(models.GroceriesTypes);
+      Groceries.belongsTo(models.GroceriesTypes, {
+        foreignKey: "groceryTypeId",
+      });
     }
   }
 
@@ -25,6 +27,11 @@ module.exports = (sequelize, DataTypes) => {
       },
       isCustom: {
         type: DataTypes.BOOLEAN,
+      },
+      groceryTypeId: {
+        allowNull: false,
+        type: DataTypes.INTEGER,
+        references: { model: "GroceriesTypes", key: "groceryTypeId" },
       },
     },
     {
