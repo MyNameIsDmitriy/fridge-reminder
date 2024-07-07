@@ -11,6 +11,15 @@ export default {
       fontFamily: {
         roboto: ["Roboto, sans-serif"],
       },
+
+      keyframes: {
+        pulsating: {
+          "40%": { transform: "scale(1.2)" },
+          "60%": { transform: "scale(0.9)" },
+          "80%": { transform: "scale(1.1)" },
+          "100%": { transform: "scale(1)" },
+        },
+      },
     },
   },
   plugins: [],
