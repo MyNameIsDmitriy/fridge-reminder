@@ -59,24 +59,38 @@ class UserService {
     return user;
   }
 
-  async register(email, password) {
-    const preUser = await Users.findOne({
+  async checkUserByEmail(email) {
+    const user = await Users.findOne({
       where: {
         email: email,
       },
     });
 
-    if (preUser) {
-      throw new Error("email already in use");
+    if (user) {
+      // throw new Error("Email already in use");
+      return false;
     }
 
-    const hashedPassword = bcrypt.hashSync(
-      password,
-      Number(process.env.HASH_SALT)
-    );
-    const user = await this.createUser(email, hashedPassword);
+    if (!user) {
+      // throw new Error("Email is free");
+      return true;
+    }
+  }
 
-    return user;
+  async register(email, password) {
+    const isEmailFree = await this.checkUserByEmail(email);
+
+    if (isEmailFree) {
+      const hashedPassword = bcrypt.hashSync(
+        password,
+        Number(process.env.HASH_SALT)
+      );
+      const user = await this.createUser(email, hashedPassword);
+
+      return user;
+    }
+
+    return isEmailFree;
   }
 
   async login(email, password) {
