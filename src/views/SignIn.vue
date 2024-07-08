@@ -1,9 +1,41 @@
 <script setup>
 import { ref } from "vue";
+import { useRouter } from "vue-router";
+
+import AuthApi from "../controllers/auth-conroller";
+
+const authApi = new AuthApi();
 
 const email = ref("");
 const password = ref("");
 const errMsg = ref([]);
+const router = useRouter();
+
+const login = async () => {
+  try {
+    errMsg.value.splice(0);
+
+    const result = await authApi.login(email.value, password.value);
+
+    if (await authApi.err.response.data.message) {
+      errMsg.value.push(await authApi.err.response.data.message);
+      console.log(errMsg.value);
+    }
+
+    const { token: token, user: user } = result.data;
+    console.log({ token: token }, { user: user });
+
+    localStorage.setItem("token", token);
+    localStorage.setItem("user", user);
+
+    router.push({ name: "Home" });
+
+    // TODO: useless return ?
+    return result;
+  } catch (e) {
+    console.error(e);
+  }
+};
 </script>
 
 <template>
