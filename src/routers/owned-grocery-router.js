@@ -12,14 +12,13 @@ module.exports = (ownedGroceryService) => {
     }
   });
 
-  ownedGroceryRouter.get("/:id", async (req, res) => {
+  ownedGroceryRouter.get("/:userId", async (req, res) => {
     try {
-      const { id } = req.params;
-      const ownedGrocery = await ownedGroceryService.getOwnedGrocery(
-        Number(id)
-      );
+      const { userId } = req.params;
+      const userOwnedGroceries =
+        await ownedGroceryService.getUserOwnedGroceries(Number(userId));
 
-      res.json(ownedGrocery);
+      res.json(userOwnedGroceries);
     } catch (e) {
       res.status(e.statusCode || 500).json({ message: e.message });
     }

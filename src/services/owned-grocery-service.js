@@ -1,12 +1,47 @@
 const { OwnedGroceries } = require("../../models");
+const { Groceries } = require("../../models");
+const { GroceriesTypes } = require("../../models");
 
 class OwnedGroceryService {
   async getAllOwnedGroceries() {
-    return OwnedGroceries.findAll();
+    return OwnedGroceries.findAll({
+      include: [
+        {
+          model: Groceries,
+          attributes: ["groceryName", "groceryTypeId"],
+          required: false,
+          include: [
+            {
+              model: GroceriesTypes,
+              attributes: ["groceryTypeName"],
+              required: false,
+            },
+          ],
+        },
+      ],
+    });
   }
 
-  async getOwnedGrocery(id) {
-    return OwnedGroceries.findByPk(id);
+  async getUserOwnedGroceries(userId) {
+    return OwnedGroceries.findAll({
+      where: {
+        userId: userId,
+      },
+      include: [
+        {
+          model: Groceries,
+          attributes: ["groceryName", "groceryTypeId"],
+          required: false,
+          include: [
+            {
+              model: GroceriesTypes,
+              attributes: ["groceryTypeName"],
+              required: false,
+            },
+          ],
+        },
+      ],
+    });
   }
 
   async createOwnedGrocery(userId, groceryId, amount) {

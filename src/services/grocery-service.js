@@ -1,8 +1,18 @@
 const { Groceries } = require("../../models");
+const { GroceriesTypes } = require("../../models");
+// const { OwnedGroceries } = require("../../models");
 
 class GroceryService {
   async getAllGroceries() {
-    return Groceries.findAll();
+    return Groceries.findAll({
+      include: [
+        {
+          model: GroceriesTypes,
+          attributes: ["groceryTypeName"],
+          required: false,
+        },
+      ],
+    });
   }
 
   async getGrocery(id) {

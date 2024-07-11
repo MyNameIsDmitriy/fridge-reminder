@@ -4,15 +4,14 @@ const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class OwnedGroceries extends Model {
     static associate(models) {
-      OwnedGroceries.belongsToMany(models.Users, {
-        through: "OwnedGroceries_User",
+      OwnedGroceries.belongsTo(models.Users, {
         foreignKey: "userId",
         onDelete: "CASCADE",
       });
-      OwnedGroceries.belongsToMany(models.Groceries, {
-        through: "OwnedGroceries_Grocery",
+      OwnedGroceries.belongsTo(models.Groceries, {
+        through: "OwnedGroceries_Groceries",
         foreignKey: "groceryId",
-        onDelete: "CASCADE",
+        // onDelete: "CASCADE",
       });
     }
   }
@@ -40,15 +39,17 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         type: DataTypes.STRING,
       },
+      createdAt: {
+        allowNull: false,
+        type: DataTypes.DATE,
+      },
       updatedAt: {
         allowNull: false,
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW,
       },
     },
     {
       sequelize,
-      timestamps: false,
       modelName: "OwnedGroceries",
     }
   );

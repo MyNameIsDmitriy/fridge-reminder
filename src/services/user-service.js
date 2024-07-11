@@ -4,6 +4,25 @@ require("dotenv").config();
 
 const { Users } = require("../../models");
 
+class ApiError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.statusCode = status;
+  }
+}
+
+class NotFoundError extends ApiError {
+  constructor(message) {
+    super(404, message);
+  }
+}
+
+class BadRequestError extends ApiError {
+  constructor(message) {
+    super(400, message);
+  }
+}
+
 const generateAccessToken = (id) => {
   const payload = { id };
   return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: "24h" });
@@ -17,7 +36,7 @@ class UserService {
   async getUser(id) {
     const user = await Users.findByPk(id);
     if (!user) {
-      throw new Error("User not found");
+      throw new NotFoundError("User not found");
     }
     return user;
   }
@@ -34,7 +53,7 @@ class UserService {
   async updateUser(id, updatedUser) {
     const user = await Users.findByPk(id);
     if (!user) {
-      throw new Error("User not found");
+      throw new NotFoundError("User not found");
     }
 
     if (updatedUser.password) {
@@ -52,7 +71,7 @@ class UserService {
   async deleteUser(id) {
     const user = await Users.findByPk(id);
     if (!user) {
-      throw new Error("User not found");
+      throw new NotFoundError("User not found");
     }
     await user.destroy();
 
@@ -67,30 +86,20 @@ class UserService {
     });
 
     if (user) {
-      // throw new Error("Email already in use");
-      return false;
-    }
-
-    if (!user) {
-      // throw new Error("Email is free");
-      return true;
+      throw new BadRequestError("Email already in use");
     }
   }
 
   async register(email, password) {
-    const isEmailFree = await this.checkUserByEmail(email);
+    await this.checkUserByEmail(email);
 
-    if (isEmailFree) {
-      const hashedPassword = bcrypt.hashSync(
-        password,
-        Number(process.env.HASH_SALT)
-      );
-      const user = await this.createUser(email, hashedPassword);
+    const hashedPassword = bcrypt.hashSync(
+      password,
+      Number(process.env.HASH_SALT)
+    );
+    const user = await this.createUser(email, hashedPassword);
 
-      return user;
-    }
-
-    return isEmailFree;
+    return user;
   }
 
   async login(email, password) {
@@ -100,12 +109,12 @@ class UserService {
       },
     });
     if (!user) {
-      throw new Error(`User not found`);
+      throw new NotFoundError(`User not found`);
     }
 
     const validPassword = bcrypt.compareSync(password, user.password);
     if (!validPassword) {
-      throw new Error("Incorrect password");
+      throw new BadRequestError("Incorrect password");
     }
     const token = generateAccessToken(user.userId);
 

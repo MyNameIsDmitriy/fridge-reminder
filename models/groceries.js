@@ -6,6 +6,10 @@ module.exports = (sequelize, DataTypes) => {
       Groceries.belongsTo(models.GroceriesTypes, {
         foreignKey: "groceryTypeId",
       });
+      Groceries.belongsToMany(models.OwnedGroceries, {
+        through: "OwnedGroceries_Groceries",
+        onDelete: "CASCADE",
+      });
     }
   }
 
