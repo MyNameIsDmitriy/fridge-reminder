@@ -1,10 +1,6 @@
 import axios from "axios";
 
 export default class AuthApi {
-  constructor() {
-    this.err;
-  }
-
   async register(email, password) {
     try {
       const response = await axios.post("http://localhost:8888/auth/register", {
@@ -15,8 +11,8 @@ export default class AuthApi {
       console.log(response);
       console.log(response.status);
       return response;
-    } catch (error) {
-      console.error(error.response);
+    } catch (e) {
+      throw e;
     }
   }
 
@@ -29,8 +25,7 @@ export default class AuthApi {
 
       return response;
     } catch (e) {
-      this.err = e;
-      console.error(e.response);
+      throw e;
     }
   }
 }

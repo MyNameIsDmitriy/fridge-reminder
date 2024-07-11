@@ -1,4 +1,67 @@
-<script setup></script>
+<script setup>
+import { onMounted, ref } from "vue";
+
+import OwnedGroceryAPI from "../controllers/owned-grocery-controller";
+
+const ownedGroceryApi = new OwnedGroceryAPI();
+
+const ownedGroceries = ref();
+const user = ref();
+
+const getImageUrl = (name) => {
+  return new URL(`../assets/svg/groceries-icon/${name}.svg`, import.meta.url)
+    .href;
+};
+
+const getDate = (sqlString) => {
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "June",
+    "July",
+    "Aug",
+    "Sept",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
+
+  const date = sqlString.split("T")[0];
+  const [year, month, day] = date.split("-");
+  let noZeroDay = "";
+
+  const monthName = months.filter((name, idx) => {
+    return "0" + (idx + 1) === month;
+  });
+
+  if (day.split("")[0] == 0) {
+    noZeroDay = day.split("")[1];
+  } else {
+    noZeroDay = day;
+  }
+
+  return `${monthName} ${noZeroDay}, ${year}`;
+};
+
+const getTime = (sqlString) => {
+  const time = sqlString.split("T")[1];
+
+  return time.split("").splice(0, 5).join("");
+};
+
+onMounted(async () => {
+  user.value = JSON.parse(localStorage.getItem("user"));
+
+  ownedGroceries.value = await ownedGroceryApi.getUserOwnedGroceries(
+    user.value.userId
+  );
+
+  console.log(ownedGroceries.value);
+});
+</script>
 
 <template>
   <main
@@ -15,16 +78,18 @@
     </div>
 
     <div
-      v-for="grocery in groceries"
-      :key="grocery.groceryId"
+      v-for="ownedGrocery in ownedGroceries"
+      :key="ownedGrocery.ownedGroceryId"
       class="mt-4 [&>*]:flex [&>*]:justify-center [&>*]:items-center"
     >
-      <div>{{ grocery.groceryName }}</div>
-      <div>{{ grocery.imgUrl }}</div>
+      <div>{{ ownedGrocery.Grocery.groceryName }}</div>
+      <div>
+        <img class="w-6" :src="getImageUrl(ownedGrocery.Grocery.groceryName)" />
+      </div>
       <div>
         <div class="flex justify-center gap-3">
           <img
-            class="w-6"
+            class="w-5"
             src="../assets/svg/main/minus.svg"
             alt="minus button"
           />
@@ -33,16 +98,19 @@
             type="text"
           />
           <img
-            class="w-6"
+            class="w-5"
             src="../assets/svg/main/plus.svg"
             alt="plus button"
           />
         </div>
       </div>
-      <div>16:33 / 25.04.24</div>
+      <div class="flex flex-col">
+        <p>{{ getDate(ownedGrocery.createdAt) }}</p>
+        <p>{{ getTime(ownedGrocery.createdAt) }}</p>
+      </div>
       <div class="flex gap-3">
         <svg
-          class="w-8 [&>path]:hover:stroke-yellow-500"
+          class="w-7 [&>path]:hover:stroke-yellow-500"
           viewBox="0 0 24 24"
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
@@ -62,7 +130,7 @@
         </svg>
         <span class="text-2xl text-purple-600">|</span>
         <svg
-          class="w-8 fill-[#892cdc] hover:fill-red-600"
+          class="w-7 fill-[#892cdc] hover:fill-red-600"
           viewBox="0 0 1000 1000"
           xmlns="http://www.w3.org/2000/svg"
         >

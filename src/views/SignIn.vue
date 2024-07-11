@@ -17,23 +17,22 @@ const login = async () => {
 
     const result = await authApi.login(email.value, password.value);
 
-    if (await authApi.err.response.data.message) {
-      errMsg.value.push(await authApi.err.response.data.message);
-      console.log(errMsg.value);
-    }
-
     const { token: token, user: user } = result.data;
     console.log({ token: token }, { user: user });
 
     localStorage.setItem("token", token);
-    localStorage.setItem("user", user);
+    localStorage.setItem("user", JSON.stringify(user));
 
     router.push({ name: "Home" });
 
     // TODO: useless return ?
     return result;
   } catch (e) {
-    console.error(e);
+    if (e.response.data.message) {
+      errMsg.value.push(e.response.data.message);
+    } else {
+      console.error(e);
+    }
   }
 };
 </script>
