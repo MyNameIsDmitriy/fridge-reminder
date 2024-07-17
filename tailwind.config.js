@@ -6,6 +6,7 @@ export default {
       colors: {
         darkgrey: "#333333",
         nearlyblack: "#1A1A1A",
+        primary: "#212121",
         darkwhite: "#ECECEC",
       },
       fontFamily: {

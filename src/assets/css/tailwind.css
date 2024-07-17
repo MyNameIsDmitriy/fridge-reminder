@@ -7,7 +7,7 @@
 @layer base {
   body {
     @apply min-h-screen;
-    @apply bg-nearlyblack;
+    @apply bg-primary;
     @apply text-darkwhite;
     @apply font-roboto;
   }

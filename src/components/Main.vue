@@ -31,30 +31,53 @@ const getDate = (sqlString) => {
 
   const date = sqlString.split("T")[0];
   const [year, month, day] = date.split("-");
-  let noZeroDay = "";
-
-  const monthName = months.filter((name, idx) => {
-    return "0" + (idx + 1) === month;
-  });
-
-  if (day.split("")[0] == 0) {
-    noZeroDay = day.split("")[1];
-  } else {
-    noZeroDay = day;
-  }
+  const monthName = months[parseInt(month, 10) - 1];
+  const noZeroDay = day.startsWith("0") ? day.slice(1) : day;
 
   return `${monthName} ${noZeroDay}, ${year}`;
 };
 
 const getTime = (sqlString) => {
   const time = sqlString.split("T")[1];
+  return time.slice(0, 5);
+};
 
-  return time.split("").splice(0, 5).join("");
+const decreaseAmount = (ownedGroceryId, groceryId, amount) => {
+  let validAmount;
+  const letters = amount.trim().match(/\D/g);
+  const digits = amount.trim().match(/\d/g);
+  if (letters && digits) {
+    validAmount = Number(digits.join("")) - 1 + letters.join("");
+  } else {
+    validAmount = Number(digits.join("")) - 1;
+  }
+
+  return updateAmount(ownedGroceryId, groceryId, validAmount);
+};
+
+const increaseAmount = (ownedGroceryId, groceryId, amount) => {
+  let validAmount;
+  const letters = amount.trim().match(/\D/g);
+  const digits = amount.trim().match(/\d/g);
+  if (letters && digits) {
+    validAmount = Number(digits.join("")) + 1 + letters.join("");
+  } else {
+    validAmount = Number(digits.join("")) + 1;
+  }
+
+  return updateAmount(ownedGroceryId, groceryId, validAmount);
+};
+
+// is return neccesary ?
+const updateAmount = async (ownedGroceryId, groceryId, amount) => {
+  await ownedGroceryApi.updateOwnedGrocery(ownedGroceryId, groceryId, amount);
+  ownedGroceries.value = await ownedGroceryApi.getUserOwnedGroceries(
+    user.value.userId
+  );
 };
 
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
-
   ownedGroceries.value = await ownedGroceryApi.getUserOwnedGroceries(
     user.value.userId
   );
@@ -68,7 +91,7 @@ onMounted(async () => {
     class="w-5/6 m-auto mt-10 [&>div]:grid [&>div]:grid-cols-[1fr_1fr_2fr_1fr_1fr]"
   >
     <div
-      class="[&>*]:flex [&>*]:justify-center [&>*]:items-center [&>p]:py-1 [&>p]:border-b-2 [&>p]:border-purple-600"
+      class="[&>p]:flex [&>p]:justify-center [&>p]:items-center [&>p]:py-1 [&>p]:text-lg [&>p]:border-b-2 [&>p]:border-purple-600"
     >
       <p>Name</p>
       <p>Image</p>
@@ -84,29 +107,52 @@ onMounted(async () => {
     >
       <div>{{ ownedGrocery.Grocery.groceryName }}</div>
       <div>
-        <img class="w-6" :src="getImageUrl(ownedGrocery.Grocery.groceryName)" />
+        <img
+          class="w-6 select-none"
+          :src="getImageUrl(ownedGrocery.Grocery.groceryName)"
+        />
       </div>
-      <div>
-        <div class="flex justify-center gap-3">
-          <img
-            class="w-5"
-            src="../assets/svg/main/minus.svg"
-            alt="minus button"
-          />
-          <input
-            class="w-5/6 py-1 px-2 text-center border border-purple-600 rounded-lg bg-transparent"
-            type="text"
-          />
-          <img
-            class="w-5"
-            src="../assets/svg/main/plus.svg"
-            alt="plus button"
-          />
-        </div>
+      <div class="flex justify-center gap-3">
+        <img
+          @click="
+            decreaseAmount(
+              ownedGrocery.ownedGroceryId,
+              ownedGrocery.groceryId,
+              ownedGrocery.amount
+            )
+          "
+          class="w-5 select-none"
+          src="../assets/svg/main/minus.svg"
+          alt="minus button"
+        />
+        <input
+          class="w-5/6 py-1 px-2 text-center border border-purple-600 rounded-lg bg-transparent"
+          v-model="ownedGrocery.amount"
+          @input="
+            updateAmount(
+              ownedGrocery.ownedGroceryId,
+              ownedGrocery.groceryId,
+              $event.target.value
+            )
+          "
+          type="text"
+        />
+        <img
+          @click="
+            increaseAmount(
+              ownedGrocery.ownedGroceryId,
+              ownedGrocery.groceryId,
+              ownedGrocery.amount
+            )
+          "
+          class="w-5 select-none"
+          src="../assets/svg/main/plus.svg"
+          alt="plus button"
+        />
       </div>
       <div class="flex flex-col">
-        <p>{{ getDate(ownedGrocery.createdAt) }}</p>
-        <p>{{ getTime(ownedGrocery.createdAt) }}</p>
+        <p>{{ getDate(ownedGrocery.updatedAt) }}</p>
+        <p>{{ getTime(ownedGrocery.updatedAt) }}</p>
       </div>
       <div class="flex gap-3">
         <svg
