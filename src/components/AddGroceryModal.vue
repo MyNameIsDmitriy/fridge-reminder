@@ -1,7 +1,9 @@
 <script setup>
-import { onMounted, ref } from "vue";
-import groceryAPI from "../controllers/grocery-controller";
-import groceryTypeAPI from "../controllers/grocery-type-controller";
+import { ref, onMounted } from "vue";
+
+import { useGroceryStore } from "../stores/GroceryStore";
+import { useGroceryTypeStore } from "../stores/GroceryTypeStore";
+import { useOwnedGroceryStore } from "../stores/OwnedGroceryStore";
 
 const emit = defineEmits(["toggleAddGroceryModal"]);
 
@@ -12,19 +14,19 @@ const props = defineProps({
   },
 });
 
-const groceryApi = new groceryAPI();
-const groceryTypeApi = new groceryTypeAPI();
-const groceries = ref(null);
-const groceriesTypes = ref(null);
-
 const input = ref(null);
+const user = ref({});
+
+const groceryStore = useGroceryStore();
+const groceryTypeStore = useGroceryTypeStore();
+const ownedGroceryStore = useOwnedGroceryStore();
 
 const toggleAddGroceryModal = () => {
   emit("toggleAddGroceryModal");
 };
 
 const findGroceryByType = (id) => {
-  const filterTypeId = groceries.value.filter((grocery) => {
+  const filterTypeId = groceryStore.groceries.filter((grocery) => {
     return grocery.groceryTypeId === id;
   });
 
@@ -39,11 +41,16 @@ const getImageUrl = (name) => {
     .href;
 };
 
-onMounted(async () => {
-  console.log(await groceryApi.getAllGroceries());
-  console.log(await groceryTypeApi.getAllGroceriesTypes());
-  groceries.value = await groceryApi.getAllGroceries();
-  groceriesTypes.value = await groceryTypeApi.getAllGroceriesTypes(); // TODO: also by id ?
+const createOwnedGrocery = (groceryId) => {
+  ownedGroceryStore.createOwnedGrocery(user.value.userId, groceryId, 1);
+};
+
+onMounted(() => {
+  user.value = JSON.parse(localStorage.getItem("user"));
+
+  groceryStore.fetchAllGroceries();
+  groceryTypeStore.fetchAllGroceriesTypes();
+  ownedGroceryStore.fetchAllUserOwnedGroceries(user.value.userId);
 });
 </script>
 
@@ -85,7 +92,7 @@ onMounted(async () => {
       </div>
       <div class="m-2 px-3 flex flex-col">
         <div
-          v-for="type in groceriesTypes"
+          v-for="type in groceryTypeStore.groceriesTypes"
           :key="type.groceryTypeId"
           class="mb-6"
           :class="{ hidden: !findGroceryByType(type.groceryTypeId) }"
@@ -96,7 +103,8 @@ onMounted(async () => {
 
           <div class="flex flex-wrap">
             <div
-              v-for="grocery in groceries"
+              @click="createOwnedGrocery(grocery.groceryId)"
+              v-for="grocery in groceryStore.groceries"
               :key="grocery.groceryId"
               class="flex items-center gap-2 mr-3 my-2 px-2 py-0.5 rounded bg-purple-600 bg-opacity-30 cursor-pointer"
               :class="{
