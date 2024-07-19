@@ -55,7 +55,25 @@ class OwnedGroceryService {
   }
 
   async updateOwnedGrocery(ownedGroceryId, groceryId, amount) {
-    const ownedGrocery = await OwnedGroceries.findByPk(ownedGroceryId);
+    const ownedGrocery = await OwnedGroceries.findOne({
+      where: {
+        ownedGroceryId: ownedGroceryId,
+      },
+      include: [
+        {
+          model: Groceries,
+          attributes: ["groceryName", "groceryTypeId"],
+          required: false,
+          include: [
+            {
+              model: GroceriesTypes,
+              attributes: ["groceryTypeName"],
+              required: false,
+            },
+          ],
+        },
+      ],
+    });
     if (!ownedGrocery) {
       throw new Error("Your grocery not found");
     }
