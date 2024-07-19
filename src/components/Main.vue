@@ -1,11 +1,10 @@
 <script setup>
 import { onMounted, ref } from "vue";
 
-import OwnedGroceryAPI from "../controllers/owned-grocery-controller";
+import { useOwnedGroceryStore } from "../stores/OwnedGroceryStore";
 
-const ownedGroceryApi = new OwnedGroceryAPI();
+const ownedGroceriesStore = useOwnedGroceryStore();
 
-const ownedGroceries = ref();
 const user = ref();
 
 const getImageUrl = (name) => {
@@ -44,8 +43,8 @@ const getTime = (sqlString) => {
 
 const decreaseAmount = (ownedGroceryId, groceryId, amount) => {
   let validAmount;
-  const letters = amount.trim().match(/\D/g);
-  const digits = amount.trim().match(/\d/g);
+  const letters = amount.toString().trim().match(/\D/g);
+  const digits = amount.toString().trim().match(/\d/g);
   if (letters && digits) {
     validAmount = Number(digits.join("")) - 1 + letters.join("");
   } else {
@@ -57,8 +56,8 @@ const decreaseAmount = (ownedGroceryId, groceryId, amount) => {
 
 const increaseAmount = (ownedGroceryId, groceryId, amount) => {
   let validAmount;
-  const letters = amount.trim().match(/\D/g);
-  const digits = amount.trim().match(/\d/g);
+  const letters = amount.toString().trim().match(/\D/g);
+  const digits = amount.toString().trim().match(/\d/g);
   if (letters && digits) {
     validAmount = Number(digits.join("")) + 1 + letters.join("");
   } else {
@@ -68,21 +67,46 @@ const increaseAmount = (ownedGroceryId, groceryId, amount) => {
   return updateAmount(ownedGroceryId, groceryId, validAmount);
 };
 
-// is return neccesary ?
+// Function to deep clone an object
+const deepClone = (obj) => JSON.parse(JSON.stringify(obj));
+
 const updateAmount = async (ownedGroceryId, groceryId, amount) => {
-  await ownedGroceryApi.updateOwnedGrocery(ownedGroceryId, groceryId, amount);
-  ownedGroceries.value = await ownedGroceryApi.getUserOwnedGroceries(
-    user.value.userId
-  );
+  try {
+    // Clone the grocery item to isolate the update
+    const clonedGrocery = deepClone(
+      ownedGroceriesStore.ownedGroceries.find(
+        (item) => item.ownedGroceryId === ownedGroceryId
+      )
+    );
+
+    // Update the amount on the cloned object
+    clonedGrocery.amount = amount;
+
+    await ownedGroceriesStore.updateOwnedGrocery(
+      ownedGroceryId,
+      groceryId,
+      clonedGrocery.amount
+    );
+
+    // Replace the original item in the store with the updated clone
+    const index = ownedGroceriesStore.ownedGroceries.findIndex(
+      (item) => item.ownedGroceryId === ownedGroceryId
+    );
+    if (index !== -1) {
+      ownedGroceriesStore.ownedGroceries[index] = clonedGrocery;
+    } else {
+      console.error("Owned grocery item not found for update");
+    }
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
-  ownedGroceries.value = await ownedGroceryApi.getUserOwnedGroceries(
-    user.value.userId
-  );
-
-  console.log(ownedGroceries.value);
+  ownedGroceriesStore.fetchAllUserOwnedGroceries(user.value.userId).then(() => {
+    console.log(ownedGroceriesStore.ownedGroceries);
+  });
 });
 </script>
 
@@ -101,7 +125,7 @@ onMounted(async () => {
     </div>
 
     <div
-      v-for="ownedGrocery in ownedGroceries"
+      v-for="ownedGrocery in ownedGroceriesStore.ownedGroceries"
       :key="ownedGrocery.ownedGroceryId"
       class="mt-4 [&>*]:flex [&>*]:justify-center [&>*]:items-center"
     >
