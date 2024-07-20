@@ -43,6 +43,7 @@ const getImageUrl = (name) => {
 
 const createOwnedGrocery = (groceryId) => {
   ownedGroceryStore.createOwnedGrocery(user.value.userId, groceryId, 1);
+  toggleAddGroceryModal();
 };
 
 onMounted(() => {
