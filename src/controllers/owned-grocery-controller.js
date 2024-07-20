@@ -43,4 +43,16 @@ export default class OwnedGroceryAPI {
       throw e;
     }
   }
+
+  async deleteOwnedGrocery(ownedGroceryId) {
+    try {
+      return axios
+        .delete(`http://localhost:8888/fridge/${ownedGroceryId}`)
+        .then((response) => {
+          return response.data;
+        });
+    } catch (e) {
+      throw e;
+    }
+  }
 }

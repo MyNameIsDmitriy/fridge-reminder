@@ -42,5 +42,13 @@ export const useOwnedGroceryStore = defineStore("ownedGroceryStore", {
         console.error("Get an error when unpdating an owned grocery: " + e);
       }
     },
+
+    async deleteOwnedGrocery(ownedGroceryId) {
+      try {
+        await ownedGroceryApi.deleteOwnedGrocery(ownedGroceryId);
+      } catch (e) {
+        console.error("Get an error when deleting an owned grocery: " + e);
+      }
+    },
   },
 });

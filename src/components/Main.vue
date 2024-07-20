@@ -102,6 +102,23 @@ const updateAmount = async (ownedGroceryId, groceryId, amount) => {
   }
 };
 
+const deleteOwnedGrocery = async (ownedGroceryId) => {
+  try {
+    await ownedGroceriesStore.deleteOwnedGrocery(ownedGroceryId);
+
+    const index = ownedGroceriesStore.ownedGroceries.findIndex(
+      (item) => item.ownedGroceryId === ownedGroceryId
+    );
+    if (index !== -1) {
+      ownedGroceriesStore.ownedGroceries.splice(index, 1);
+    } else {
+      console.error("Owned grocery item not found for update");
+    }
+  } catch (e) {
+    console.error(e);
+  }
+};
+
 onMounted(async () => {
   user.value = JSON.parse(localStorage.getItem("user"));
   ownedGroceriesStore.fetchAllUserOwnedGroceries(user.value.userId).then(() => {
@@ -200,6 +217,7 @@ onMounted(async () => {
         </svg>
         <span class="text-2xl text-purple-600">|</span>
         <svg
+          @click="deleteOwnedGrocery(ownedGrocery.ownedGroceryId)"
           class="w-7 fill-[#892cdc] hover:fill-red-600"
           viewBox="0 0 1000 1000"
           xmlns="http://www.w3.org/2000/svg"
