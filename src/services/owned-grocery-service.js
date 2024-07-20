@@ -51,7 +51,26 @@ class OwnedGroceryService {
       amount: amount,
     });
 
-    return newOwnedGrocery;
+    return OwnedGroceries.findOne({
+      where: {
+        userId: userId,
+        ownedGroceryId: newOwnedGrocery.ownedGroceryId,
+      },
+      include: [
+        {
+          model: Groceries,
+          attributes: ["groceryName", "groceryTypeId"],
+          required: false,
+          include: [
+            {
+              model: GroceriesTypes,
+              attributes: ["groceryTypeName"],
+              required: false,
+            },
+          ],
+        },
+      ],
+    });
   }
 
   async updateOwnedGrocery(ownedGroceryId, groceryId, amount) {
