@@ -16,19 +16,32 @@ const props = defineProps({
 
 const input = ref(null);
 const user = ref({});
+const searchQuery = ref("");
+const queryDelay = ref(null);
+const groceryList = ref();
 
 const groceryStore = useGroceryStore();
 const groceryTypeStore = useGroceryTypeStore();
 const ownedGroceryStore = useOwnedGroceryStore();
 
 const toggleAddGroceryModal = () => {
+  searchQuery.value = "";
+  groceryList.value = groceryStore.groceries;
   emit("toggleAddGroceryModal");
 };
 
 const findGroceryByType = (id) => {
-  const filterTypeId = groceryStore.groceries.filter((grocery) => {
-    return grocery.groceryTypeId === id;
-  });
+  let filterTypeId;
+
+  if (searchQuery.value !== "") {
+    filterTypeId = groceryList.value.filter((grocery) => {
+      return grocery.groceryTypeId === id;
+    });
+  } else {
+    filterTypeId = groceryStore.groceries.filter((grocery) => {
+      return grocery.groceryTypeId === id;
+    });
+  }
 
   if (filterTypeId[0]) {
     return true;
@@ -46,12 +59,29 @@ const createOwnedGrocery = (groceryId) => {
   toggleAddGroceryModal();
 };
 
+const getSearchResults = () => {
+  clearTimeout(queryDelay.value);
+  queryDelay.value = setTimeout(async () => {
+    if (searchQuery.value !== "") {
+      groceryList.value = groceryStore.groceries.filter((grocery) => {
+        if (grocery.groceryName.match(searchQuery.value)) {
+          return grocery;
+        }
+      });
+    } else {
+      groceryList.value = groceryStore.groceries;
+    }
+  }, 300);
+};
+
 onMounted(() => {
   user.value = JSON.parse(localStorage.getItem("user"));
 
   groceryStore.fetchAllGroceries();
   groceryTypeStore.fetchAllGroceriesTypes();
   ownedGroceryStore.fetchAllUserOwnedGroceries(user.value.userId);
+
+  getSearchResults();
 });
 </script>
 
@@ -72,6 +102,8 @@ onMounted(() => {
             <input
               class="w-full text-lg rounded-t-md border-b border-purple-600 outline-none bg-transparent px-11 py-2 placeholder:text-gray-500"
               ref="input"
+              v-model="searchQuery"
+              @input="getSearchResults"
               placeholder="Search..."
               autocomplete="off"
               type="text"
@@ -107,7 +139,7 @@ onMounted(() => {
               <div class="flex flex-wrap">
                 <div
                   @click="createOwnedGrocery(grocery.groceryId)"
-                  v-for="grocery in groceryStore.groceries"
+                  v-for="grocery in groceryList"
                   :key="grocery.groceryId"
                   class="flex items-center gap-2 mr-3 my-2 px-2 py-0.5 rounded bg-purple-600 bg-opacity-30 cursor-pointer"
                   :class="{
