@@ -13,32 +13,43 @@ const getImageUrl = (name) => {
 };
 
 const getDate = (sqlString) => {
-  const months = [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "May",
-    "June",
-    "July",
-    "Aug",
-    "Sept",
-    "Oct",
-    "Nov",
-    "Dec",
-  ];
+  if (sqlString && sqlString !== "") {
+    const utcDate = new Date(sqlString);
+    const localDate = utcDate.toLocaleString();
 
-  const date = sqlString.split("T")[0];
-  const [year, month, day] = date.split("-");
-  const monthName = months[parseInt(month, 10) - 1];
-  const noZeroDay = day.startsWith("0") ? day.slice(1) : day;
+    const date = localDate.split(",");
+    const [month, day, year] = date[0].split("/");
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "June",
+      "July",
+      "Aug",
+      "Sept",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const monthName = months[parseInt(month, 10) - 1];
 
-  return `${monthName} ${noZeroDay}, ${year}`;
+    return `${monthName} ${parseInt(day)}, ${year}`;
+  }
+  return "not found";
 };
 
 const getTime = (sqlString) => {
-  const time = sqlString.split("T")[1];
-  return time.slice(0, 5);
+  if (sqlString && sqlString !== "") {
+    const utcDate = new Date(sqlString);
+    const localDate = utcDate.toLocaleString();
+
+    const [date, time, interval] = localDate.split(" ");
+
+    return `${time} ${interval}`;
+  }
+  return;
 };
 
 const decreaseAmount = (ownedGroceryId, groceryId, amount) => {
