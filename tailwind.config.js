@@ -21,6 +21,12 @@ export default {
           "100%": { transform: "scale(1)" },
         },
       },
+
+      boxShadow: {
+        thin: "0 0 1px 0",
+        "thin-purple": "0 0 1px 1px rgb(147, 51, 234)",
+        "thin-puple-light": "0 0 2px 1px rgb(168, 86, 247)",
+      },
     },
   },
   plugins: [],

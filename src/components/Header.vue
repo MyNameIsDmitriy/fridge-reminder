@@ -1,18 +1,95 @@
 <script setup>
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
 
 import HeaderInput from "./HeaderInput.vue";
 import AddGroceryModal from "./AddGroceryModal.vue";
 
+const router = useRouter();
+
 const isVisible = ref(null);
+const isProfileMenuOpen = ref(null);
+const profileMenu = ref(null);
+const user = ref(null);
+const fileInputRef = ref(null);
 
 const toggleAddGroceryModal = () => {
   isVisible.value = !isVisible.value;
 };
+
+const toggleProfileMenu = () => {
+  isProfileMenuOpen.value = !isProfileMenuOpen.value;
+};
+
+const handleClickOutside = (event) => {
+  if (profileMenu.value && !profileMenu.value.contains(event.target)) {
+    isProfileMenuOpen.value = false;
+  }
+};
+
+const getDate = (sqlString) => {
+  if (sqlString && sqlString !== "") {
+    const utcDate = new Date(sqlString);
+    const localDate = utcDate.toLocaleString();
+
+    const [date, time] = localDate.split(",");
+    const [month, day, year] = date.split("/");
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "June",
+      "July",
+      "Aug",
+      "Sept",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+    const monthName = months[parseInt(month, 10) - 1];
+
+    return `${monthName} ${year}`;
+  }
+
+  return "not found";
+};
+
+const handleFileSelect = (event) => {
+  const file = event.target.files[0];
+  if (file) {
+    // localStack s3
+    console.log("Selected file:", file);
+  }
+};
+
+const signOut = () => {
+  localStorage.removeItem("user");
+  localStorage.removeItem("token");
+
+  router.push({ name: "SignIn" });
+};
+
+onMounted(async () => {
+  document.addEventListener("click", handleClickOutside);
+
+  const storedUser = localStorage.getItem("user");
+  if (storedUser) {
+    try {
+      user.value = JSON.parse(storedUser);
+    } catch (e) {
+      console.error("Ошибка при разборе JSON:", e);
+      user.value = null;
+    }
+  } else {
+    console.warn('Нет данных в localStorage для ключа "user"');
+  }
+});
 </script>
 
 <template>
-  <header class="my-3 px-3">
+  <header class="p-3">
     <nav class="flex justify-between items-center">
       <img
         class="w-20"
@@ -26,9 +103,50 @@ const toggleAddGroceryModal = () => {
         @toggleAddGroceryModal="toggleAddGroceryModal"
       />
 
-      <div class="flex items-center gap-2">
-        <input class="theme-checkbox" type="checkbox" />
-        <img class="w-10" src="../assets/svg/header/user.svg" alt="user icon" />
+      <div ref="profileMenu" class="relative flex items-center gap-2">
+        <!-- <input class="theme-checkbox" type="checkbox" /> -->
+        <img
+          @click="toggleProfileMenu"
+          class="w-10 cursor-pointer"
+          src="../assets/svg/header/user.svg"
+          alt="user icon"
+        />
+        <input
+          class="hidden"
+          type="file"
+          ref="fileInputRef"
+          @change="handleFileSelect"
+        />
+        <Transition name="fade">
+          <div
+            v-show="isProfileMenuOpen"
+            class="absolute top-10 right-0 flex flex-col w-60 px-4 py-2 test bg-primary rounded border-0 shadow-thin"
+          >
+            <span class="flex self-center mb-2">
+              <img
+                class="w-8"
+                src="../assets/svg/header/user.svg"
+                alt="profile img"
+                @click="$refs.fileInputRef.click()"
+              />
+            </span>
+            <div class="flex flex-col items-center [&>span]:text-sm">
+              <span v-if="user" class="font-medium mb-1">{{
+                user.userName || "Your name"
+              }}</span>
+              <span v-if="user" class="font-light mb-1">{{ user.email }}</span>
+              <span v-if="user" class="font-light"
+                >Together since {{ getDate(user.createdAt) }}</span
+              >
+            </div>
+            <button
+              @click="signOut"
+              class="mt-2 mb-1 border-0 rounded shadow-thin hover:shadow-thin-purple focus:outline-0 focus:outline-offset-0 focus:outline-transparent focus:shadow-thin-puple-light"
+            >
+              <span>Sign out</span>
+            </button>
+          </div>
+        </Transition>
       </div>
 
       <AddGroceryModal
@@ -100,5 +218,23 @@ const toggleAddGroceryModal = () => {
 
 .theme-checkbox:checked {
   background-position: 100%;
+}
+
+.fade-enter-active {
+  transition: all 0.3s cubic-bezier(0.075, 0.82, 0.165, 1) 0.15s;
+}
+
+.fade-leave-active {
+  transition: all 0.3s cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.fade-enter-from {
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.fade-leave-to {
+  opacity: 0;
+  transform: scale(0.8);
 }
 </style>
